@@ -107,6 +107,8 @@ C = C_input * 30
 L_m = 30 if mist_is_poison else 60
 L_s = 30
 L_t = 30
+# 참고용(독무 반대) L
+L_m_ref = 60 if mist_is_poison else 30
 
 conversion_factor = Explosion_base / A if A > 0 else 0
 
@@ -140,6 +142,8 @@ def r_k_t(t):
 P_m = [0.0] * (t_max + 1)
 P_s = [0.0] * (t_max + 1)
 P_t = [0.0] * (t_max + 1)
+# 참고용(독무 반대) 누적 독
+P_m_ref = [0.0] * (t_max + 1)
 
 if use_snake:
     P_s[0] = B
@@ -157,6 +161,13 @@ for t in range(1, t_max + 1):
         P_m[t] = P_m[t - 1] + add - P_m[ref] / L_m
     else:
         P_m[t] = 0.0
+    # ---- 참고용 4번 스킬 (독무 반대) ----
+    if use_mist:
+        add_ref = (A / 7) * i_m(t)
+        ref_ref = max(0, min(t - 1, r_k_m(t)))
+        P_m_ref[t] = P_m_ref[t - 1] + add_ref - P_m_ref[ref_ref] / L_m_ref
+    else:
+        P_m_ref[t] = 0.0
 
     if use_snake:
         add = B * i_s(t)
@@ -176,6 +187,13 @@ for t in range(1, t_max + 1):
 # DoT / Held DoT
 # =========================
 DoT = [(P_m[t] + P_s[t] + P_t[t]) / 30 for t in range(t_max + 1)]
+# 참고용 DoT (독무 반대)
+DoT_ref = [
+    (P_m_ref[t] / 30 if use_mist else 0) +
+    (P_s[t] / 30 if use_snake else 0) +
+    (P_t[t] / 30 if use_toxic else 0)
+    for t in range(t_max + 1)
+]
 
 DoT_held = [0.0] * (t_max + 1)
 last = DoT[0]
@@ -199,6 +217,7 @@ st.subheader("축적된 독의 양")
 
 fig, ax = plt.subplots()
 ax.plot(P_m, label="4nd skill")
+ax.plot(P_m_ref, label="4nd skill (ref)", linestyle="--", alpha=0.7)
 ax.plot(P_s, label="poison snake")
 ax.plot(P_t, label="toxic", color="darkgreen")
 
@@ -218,6 +237,7 @@ st.subheader("DoT 데미지")
 fig2, ax2 = plt.subplots()
 ax2.plot(DoT, label="Instant DoT", color="red")
 ax2.plot(DoT_held, label="Held DoT", color="blue", linestyle="--")
+ax2.plot(DoT_ref, label="Held DoT (ref)", linestyle="--", color="gray")
 
 ax2.set_xlabel("Time (sec)")
 ax2.set_ylabel("Damage per Second")
@@ -234,6 +254,7 @@ st.subheader("최종 결과 (체감 기준)")
 st.write(f"최종 Held DoT: {final_held_dot:,.0f}")
 st.write(f"최종 누적 독 환산값 (×30): {final_held_poison:,.0f}")
 st.write(f"💥 최종 독폭발 데미지: {final_explosion_damage:,.0f}")
+
 
 
 
