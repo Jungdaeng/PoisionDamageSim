@@ -85,7 +85,7 @@ else:
 # -------------------------
 Explosion_base = st.sidebar.number_input(
     "기본 독폭발 데미지",
-    value=90000,
+    value=0,
     step=5000,
     help="다른 독은 모두 배제, 4번 스킬이 끝난직후 스크류 대거로 터진 포익데미지를 기록하세요. 이 때 나온 데미지형태(강타,연타,치명타 유무)와 동일한 예상 값이 출력됩니다."
 )
@@ -234,5 +234,6 @@ st.subheader("최종 결과 (체감 기준)")
 st.write(f"최종 Held DoT: {final_held_dot:,.0f}")
 st.write(f"최종 누적 독 환산값 (×30): {final_held_poison:,.0f}")
 st.write(f"💥 최종 독폭발 데미지: {final_explosion_damage:,.0f}")
+
 
 
