@@ -13,49 +13,87 @@ plt.rcParams["axes.formatter.use_mathtext"] = False
 # UI
 # =========================
 st.title("모비노기 도적 독 시뮬레이션")
-st.markdown("독 종류에 따른 감쇠 모델 적용 v1.3 by 정댕/던컨")
-st.markdown("설정한 주기로 독이 지속적으로 들어갔다는 가정을하며, 평타독은 배제하여 오차가 존재합니다.")
+st.markdown("독 종류에 따른 감쇠 모델 적용 v1.4 by 정댕/던컨")
+st.markdown("설정한 주기로 독이 지속적으로 들어갔다는 가정을 하며, 평타독은 배제하여 오차가 존재합니다.")
+
 st.sidebar.header("Parameters")
 
-A_input = st.sidebar.number_input(
-    "4번 스킬 DoT",
-    value=18000,
-    step=500
+# -------------------------
+# 4번 스킬
+# -------------------------
+use_mist = st.sidebar.checkbox("4번 스킬 활성화", value=False)
+
+if use_mist:
+    A_input = st.sidebar.number_input(
+        "4번 스킬 DoT",
+        value=18000,
+        step=500
+    )
+    st.sidebar.caption("모든 독 배제, 4번 스킬 1회 사용 후 유지되는 DoT")
+
+    T_c_input = st.sidebar.number_input(
+        "4번 스킬 주기 (초)",
+        value=12,
+        min_value=1
+    )
+
+    mist_is_poison = st.sidebar.checkbox("독무 사용 여부", value=False)
+else:
+    A_input = 0
+    T_c_input = 7
+    mist_is_poison = True
+
+# -------------------------
+# 독사 무기
+# -------------------------
+use_snake = st.sidebar.checkbox("독사 무기 활성화", value=False)
+
+if use_snake:
+    B_input = st.sidebar.number_input(
+        "독사 무기 DoT",
+        value=19000,
+        step=500
+    )
+    st.sidebar.caption("모든 독 배제, 독사 무기 1회 타격 후 유지되는 DoT")
+else:
+    B_input = 0
+
+# -------------------------
+# 독성
+# -------------------------
+use_toxic = st.sidebar.checkbox("독성 활성화", value=False)
+
+if use_toxic:
+    C_input = st.sidebar.number_input(
+        "독성 DoT",
+        value=8000,
+        step=500
+    )
+    st.sidebar.caption("모든 독 배제, 독성 1회 발동 시 유지되는 DoT")
+
+    T_toxic = st.sidebar.number_input(
+        "독성 시전 주기 (초), 3차징",
+        value=15,
+        min_value=1
+    )
+else:
+    C_input = 0
+    T_toxic = 999999  # 사실상 비활성
+
+# -------------------------
+# 독 폭발
+# -------------------------
+Explosion_base = st.sidebar.number_input(
+    "기본 독폭발 데미지",
+    value=90000,
+    step=5000,
+    help="다른 독은 모두 배제, 4번 스킬이 끝난직후 스크류 대거로 터진 포익데미지를 기록하세요. 이 때 나온 데미지형태(강타,연타,치명타 유무)와 동일한 예상 값이 출력됩니다."
 )
-st.sidebar.caption("모든 독 배제, 4번 스킬 1회 사용 후 유지되는 DoT")
 
-B_input = st.sidebar.number_input(
-    "독사 무기 DoT",
-    value=19000,
-    step=500
+t_max = st.sidebar.slider(
+    "시뮬레이션 시간 범위 (초)",
+    10, 300, 120
 )
-st.sidebar.caption("모든 독 배제, 독사 무기 1회 타격 후 유지되는 DoT")
-
-C_input = st.sidebar.number_input(
-    "독성 DoT",
-    value=8000,
-    step=500
-)
-st.sidebar.caption("모든 독 배제, 독성 1회 발동 시 유지되는 DoT")
-
-T_c_input = st.sidebar.number_input(
-    "4번 스킬 주기 (초)",
-    value=12,
-    min_value=1
-)
-
-T_toxic = st.sidebar.number_input(
-    "독성 시전 주기 (초), 3차징",
-    value=15,
-    min_value=1
-)
-
-t_max = st.sidebar.slider("시뮬레이션 시간 범위 (초)", 10, 300, 120)
-
-use_mist = st.sidebar.checkbox("4번 스킬 활성화", value=True)
-mist_is_poison = st.sidebar.checkbox("독무 사용 여부", value=True)
-use_snake = st.sidebar.checkbox("독사 무기 활성화", value=True)
-use_toxic = st.sidebar.checkbox("독성 활성화", value=True)
 
 # =========================
 # Internal parameters
@@ -69,6 +107,8 @@ C = C_input * 30
 L_m = 30 if mist_is_poison else 60
 L_s = 30
 L_t = 30
+
+conversion_factor = Explosion_base / A if A > 0 else 0
 
 # =========================
 # Helper functions
@@ -111,7 +151,6 @@ if use_toxic:
 # =========================
 for t in range(1, t_max + 1):
 
-    # 4번 스킬
     if use_mist:
         add = (A / 7) * i_m(t)
         ref = max(0, min(t - 1, r_k_m(t)))
@@ -119,7 +158,6 @@ for t in range(1, t_max + 1):
     else:
         P_m[t] = 0.0
 
-    # 독사
     if use_snake:
         add = B * i_s(t)
         ref = max(0, min(t - 1, r_k_s(t)))
@@ -127,7 +165,6 @@ for t in range(1, t_max + 1):
     else:
         P_s[t] = 0.0
 
-    # 독성
     if use_toxic:
         add = C * i_t(t)
         ref = max(0, min(t - 1, r_k_t(t)))
@@ -136,18 +173,10 @@ for t in range(1, t_max + 1):
         P_t[t] = 0.0
 
 # =========================
-# DoT (instant)
+# DoT / Held DoT
 # =========================
-DoT = [
-    (P_m[t] / 30 if use_mist else 0) +
-    (P_s[t] / 30 if use_snake else 0) +
-    (P_t[t] / 30 if use_toxic else 0)
-    for t in range(t_max + 1)
-]
+DoT = [(P_m[t] + P_s[t] + P_t[t]) / 30 for t in range(t_max + 1)]
 
-# =========================
-# Held DoT
-# =========================
 DoT_held = [0.0] * (t_max + 1)
 last = DoT[0]
 
@@ -157,13 +186,20 @@ for t in range(t_max + 1):
     DoT_held[t] = last
 
 # =========================
+# Final values
+# =========================
+final_held_dot = DoT_held[-1]
+final_held_poison = final_held_dot * 30
+final_explosion_damage = final_held_poison * conversion_factor
+
+# =========================
 # Plot: Accumulated Poison
 # =========================
 st.subheader("축적된 독의 양")
 
 fig, ax = plt.subplots()
 ax.plot(P_m, label="4nd skill")
-ax.plot(P_s, label="posion snake")
+ax.plot(P_s, label="poison snake")
 ax.plot(P_t, label="toxic", color="darkgreen")
 
 ax.set_xlabel("Time (sec)")
@@ -192,12 +228,9 @@ ax2.legend()
 st.pyplot(fig2)
 
 # =========================
-# Final values
+# Final output
 # =========================
-final_held_dot = DoT_held[-1]
-final_held_poison = final_held_dot * 30
-st.subheader("최종 결과")
 st.subheader("최종 결과 (체감 기준)")
 st.write(f"최종 Held DoT: {final_held_dot:,.0f}")
 st.write(f"최종 누적 독 환산값 (×30): {final_held_poison:,.0f}")
-
+st.write(f"💥 최종 독폭발 데미지: {final_explosion_damage:,.0f}")
