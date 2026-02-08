@@ -221,7 +221,7 @@ ax2.plot(DoT_held, label="Held DoT", color="blue", linestyle="--")
 
 ax2.set_xlabel("Time (sec)")
 ax2.set_ylabel("Damage per Second")
-ax2.set_xticks(range(0, t_max + 1, 10))
+ax2.set_xticks(range(0, t_max + 1, 20))
 ax2.ticklabel_format(style="plain", axis="y")
 ax2.grid(True, linestyle="--", alpha=0.5)
 ax2.legend()
@@ -234,3 +234,4 @@ st.subheader("최종 결과 (체감 기준)")
 st.write(f"최종 Held DoT: {final_held_dot:,.0f}")
 st.write(f"최종 누적 독 환산값 (×30): {final_held_poison:,.0f}")
 st.write(f"💥 최종 독폭발 데미지: {final_explosion_damage:,.0f}")
+
