@@ -217,7 +217,13 @@ st.subheader("축적된 독의 양")
 
 fig, ax = plt.subplots()
 ax.plot(P_m, label="4nd skill")
-ax.plot(P_m_ref, label="4nd skill (ref)", linestyle="--", alpha=0.7)
+ax.plot(
+    P_m_ref,
+    label="4nd skill (ref)",
+    linestyle=(0, (2, 2)),
+    alpha=0.7
+)
+
 ax.plot(P_s, label="poison snake")
 ax.plot(P_t, label="toxic", color="darkgreen")
 
@@ -237,7 +243,13 @@ st.subheader("DoT 데미지")
 fig2, ax2 = plt.subplots()
 ax2.plot(DoT, label="Instant DoT", color="red")
 ax2.plot(DoT_held, label="Held DoT", color="blue", linestyle="--")
-ax2.plot(DoT_ref, label="Held DoT (ref)", linestyle="--", color="gray")
+ax2.plot(
+    DoT_ref,
+    label="Held DoT (ref)",
+    linestyle=(0, (2, 2)),
+    color="gray"
+)
+
 
 ax2.set_xlabel("Time (sec)")
 ax2.set_ylabel("Damage per Second")
@@ -254,6 +266,7 @@ st.subheader("최종 결과 (체감 기준)")
 st.write(f"최종 Held DoT: {final_held_dot:,.0f}")
 st.write(f"최종 누적 독 환산값 (×30): {final_held_poison:,.0f}")
 st.write(f"💥 최종 독폭발 데미지: {final_explosion_damage:,.0f}")
+
 
 
 
