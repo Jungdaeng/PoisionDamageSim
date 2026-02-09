@@ -225,7 +225,7 @@ ax.plot(
 )
 
 ax.plot(P_s, label="poison snake")
-ax.plot(P_t, label="toxic", color="darkgreen")
+ax.plot(P_t, label="Posion bomb", color="darkgreen")
 
 ax.set_xlabel("Time (sec)")
 ax.set_ylabel("Accumulated Poison")
@@ -266,6 +266,7 @@ st.subheader("최종 결과 (체감 기준)")
 st.write(f"최종 Held DoT: {final_held_dot:,.0f}")
 st.write(f"최종 누적 독 환산값 (×30): {final_held_poison:,.0f}")
 st.write(f"💥 최종 독폭발 데미지: {final_explosion_damage:,.0f}")
+
 
 
 
